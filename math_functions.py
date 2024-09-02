@@ -23,3 +23,6 @@ def get_variance(data):
 
     return sum(map(lambda p: (p[1] - mean)**2, data))/len(data)
 
+def get_coeff_of_variation(data):
+    return get_variance(data)/get_mean(data)
+
