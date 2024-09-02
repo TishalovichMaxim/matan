@@ -18,3 +18,8 @@ def get_mediana(data):
     else:
         return data[n//2][1]
 
+def get_variance(data):
+    mean = get_mean(data)
+
+    return sum(map(lambda p: (p[1] - mean)**2, data))/len(data)
+
