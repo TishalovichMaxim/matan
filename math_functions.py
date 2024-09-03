@@ -44,6 +44,8 @@ def split_sample(data):
         return 1 + int(log(len(data), 2))
 
     n = get_n_sets()
+    
+    print(f"Count of sets {n}")
 
     sample_size = len(data) // n
 
