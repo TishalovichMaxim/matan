@@ -21,6 +21,6 @@ def get_pure_data() -> list[int]:
         data = [int(val[1].replace(',', '')) for val in list_data]
     return data
 
-
 info = get_pure_data()
 print(info)
+
