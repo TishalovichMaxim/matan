@@ -1,3 +1,5 @@
+from math import log
+
 def get_mean(data):
     return sum(data)/len(data)
 
@@ -36,4 +38,19 @@ def get_variance(data):
 
 def get_coeff_of_variation(data):
     return get_variance(data)/get_mean(data)
+
+def split_sample(data):
+    def get_n_sets():
+        return 1 + int(log(len(data), 2))
+
+    n = get_n_sets()
+
+    sample_size = len(data) // n
+
+    res = []
+
+    for i in range(n - 1):
+        res.append(data[i*sample_size:(i + 1)*sample_size])
+
+    return res
 

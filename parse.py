@@ -19,8 +19,5 @@ def get_pure_data() -> list[int]:
         reader = csv.reader(inp, delimiter=',')
         list_data = list(reader)[1:]
         data = [int(val[1].replace(',', '')) for val in list_data]
-    return data
-
-info = get_pure_data()
-print(info)
+    return sorted(data)
 
