@@ -34,25 +34,6 @@ def get_variance(data):
 
     return sum(map(lambda x: (x - mean)**2, data))/len(data)
 
-def get_kvantil(data, alpha):
-    n = len(data)
-    k = int(alpha*(n - 1))
-
-    if k + 1 < alpha*n:
-        return data[min(k + 1, len(data) - 1)]
-    elif k + 1 == alpha*n:
-        return (data[min(k + 1, len(data) - 1)] + data[k])/2
-    else:
-        return data[k]
-
-def remove_outliers(data):
-    x25 = get_kvantil(data, 0.25)
-    x75 = get_kvantil(data, 0.75)
-
-    interval = (x25 - 1.5*(x75 - x25), x75 + 1.5*(x75 - x25))
-
-    return filter(lambda e: interval[0] < e and e < interval[1], data)
-
 def get_coeff_of_variation(data):
     return get_variance(data)/get_mean(data)
 
