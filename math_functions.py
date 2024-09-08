@@ -19,6 +19,7 @@ def get_fashion(freq_table):
     for x in freq_table:
         if freq_table[x] > res_x_freq:
             res_x = x
+            res_x_freq = freq_table[x]
 
     return res_x
 
@@ -54,11 +55,38 @@ def split_sample(data, n = None):
     #print(f"Min value = {min_value}")
 
     max_value = data[-1]
-    #print(f"Man value = {max_value}")
+    #print(f"Max value = {max_value}")
     
     step = (max_value - min_value)/n
 
-    res = [list(filter(lambda x: min_value + i*step <= x < min_value + (i + 1)*step, data)) for i in range(n)]
+    res = [[] for _ in range(n)]
+
+    for i in range(len(data) - 1):
+        res[int((data[i] - min_value) / step)].append(data[i])
+
+    res[-1].append(data[-1])
 
     return res
+
+def get_kvantil(data, alpha):
+    n = len(data)
+    k = int(alpha*(n - 1))
+
+    if k + 1 < alpha*n:
+        return data[min(k + 1, len(data) - 1)]
+    elif k + 1 == alpha*n:
+        return (data[min(k + 1, len(data) - 1)] + data[k])/2
+    else:
+        return data[k]
+
+def remove_outliers(data):
+    x25 = get_kvantil(data, 0.25)
+    x75 = get_kvantil(data, 0.75)
+
+    print(f"X25 = {x25}")
+    print(f"X75 = {x75}")
+    interval = (x25 - 1.5*(x75 - x25), x75 + 1.5*(x75 - x25))
+    print(interval)
+
+    return list(filter(lambda e: interval[0] <= e <= interval[1], data))
 

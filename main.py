@@ -2,6 +2,7 @@ from math import ceil, exp, floor
 from parse import get_pure_data
 from math_functions import *
 from support import separate
+from scipy.special import erf
 
 def print_data_set(data):
     for n in data:
@@ -25,6 +26,11 @@ def get_split_infos(splits):
 
     for i in range(len(splits)):
         curr_split = splits[i]
+
+        if not len(curr_split):
+            split_infos.append(SplitInfo(curr_split, None, None, None))
+            continue
+
         #print(f"Split No {i}:  {curr_split}")
         
         curr_mean = get_mean(curr_split)
@@ -113,10 +119,12 @@ separate()
 
 print("2.3")
 
+data = remove_outliers(data)
+print_data_set(data)
+
 separate()
 
 print("2.4")
-
 splits = split_sample(data)
 
 split_infos = get_split_infos(splits)
@@ -126,15 +134,18 @@ separate()
 
 print("2.5")
 
+print("Supposed distribution - Normal")
+
 separate()
 
 print("2.6")
-print("I supposed that value of the first interval = 0, second = 1 and so on...")
+print("Btw, I don't know why we need to recalculate them, but we removed ouliers, so they definitely changed. But it seems to me that something another was supposed right here...")
 
-mean = sum([len(split_infos[i].split) for i in range(len(split_infos))])/len(data)
+mean = get_mean(data)
+variance = get_variance(data)
 print(f"Mean = {mean}")
 print(f"Variance = {variance}")
-print(f"Standard quadratic ... = {sqrt(variance)}")
+print(f"Std = {sqrt(variance)}")
 
 separate()
 
@@ -178,11 +189,14 @@ print("For n_intervals + 1:")
 
 task_2_8(data, n_intervals=get_n_sets() + 1)
 
+print()
+print("s - 1 count of intervals is better because of less % of between variance")
+
 separate()
 
 print("2.9")
 
-print("Предполагаемое распределение - распределение Пуассона")
+print("Supposed distribution - Normal")
 
 def get_intervals(data, n_intervals):
     intervals = []
@@ -190,7 +204,7 @@ def get_intervals(data, n_intervals):
     min_value = data[0]
     max_value = data[-1]
 
-    delta = max_value - min_value
+    delta = (max_value - min_value)/n_intervals
     for i in range(n_intervals):
         intervals.append((min_value + i*delta, min_value + (i + 1)*delta))
 
@@ -217,48 +231,52 @@ def calc_poisson_interval_prob(mean, l, r):
     return res
 
 def chi_square_check(split_infos, data):
+    Phi = lambda x: erf(x/2**0.5)/2
+
     n = len(data)
 
     mean = get_mean(data)
-    print(mean)
+    print(f"Mean = {mean}")
+    std = sqrt(get_variance(data))
+    print(f"Std = {std}")
 
     n_intervals = len(split_infos)
 
     intervals = get_intervals(data, n_intervals)
+    #print(intervals)
 
-    p = [calc_poisson_interval_prob(mean, intervals[i][0], intervals[i][1]) for i in range(len(intervals))]
-    print(p)
+    p = [Phi((intervals[i][1] - mean)/std) - Phi((intervals[i][0] - mean)/std) for i in range(len(intervals))]
+    #print(p)
 
     res = [((len(split_infos[i].split) - n*p[i])**2)/(n*p[i]) for i in range(len(split_infos))]
-    print(res)
+    #print(res)
 
     return sum(res)
 
-print(f"Chi square = {chi_square_check(split_infos, data)}")
+def colmogorov_check(split_infos, data, intervals):
+    mean = get_mean(data)
+    std = sqrt(get_variance(data))
 
-#split_infos = []
-#
-#for i in range(len(splits)):
-#    curr_split = splits[i]
-#    print(f"Split No {i}: {curr_split}")
-#    
-#    curr_mean = get_mean(curr_split)
-#    print(f"Mean = {curr_mean}")
-#
-#    curr_variance = get_variance(curr_split)
-#    print(f"Variance = {curr_variance}")
-#
-#    standard_deviation = get_standard_deviation(curr_split)
-#    print(f"Standard deviation: {standard_deviation}")
-#    
-#    split_infos.append(SplitInfo(curr_split, curr_mean, curr_variance, standard_deviation))
-#
-#in_group_variance = sum((len(split_info.split)*split_info.variance for split_info in split_infos))/len(data)
-#print(f"In group variance = {in_group_variance}")
-#
-#temp_variances = [((curr_split.mean - mean)**2)*len(curr_split.split) for curr_split in split_infos]
-#between_group_variance = sum(temp_variances)/len(data)
-#print(f"Between group variance = {between_group_variance}")
-#
-#print(f"Between group variance / variance: {between_group_variance / variance}")
+    Phi = lambda x: erf(x/2**0.5)/2
+
+    delta = 0
+
+    F = 0
+
+    for i in range(len(intervals)):
+        x = (intervals[i][0] + intervals[i][1])/2
+        F += len(split_infos[i].split)/(len(data)*2)
+
+        delta = abs(Phi((x - mean)/std))
+
+        F += len(split_infos[i].split)/(len(data)*2)
+
+    return delta
+
+intervals = get_intervals(data, len(split_infos))
+
+print(f"Chi square = {chi_square_check(split_infos, data)}")
+print(f"Chi square is less than X^2(50, 0.99), so distribution is really normal")
+
+print(f"Colmogorov = {colmogorov_check(split_infos, data, intervals)}")
 
