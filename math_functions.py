@@ -1,4 +1,4 @@
-from math import log
+from math import log, sqrt
 
 def get_mean(data):
     return sum(data)/len(data)
@@ -36,23 +36,29 @@ def get_variance(data):
 
     return sum(map(lambda x: (x - mean)**2, data))/len(data)
 
-def get_coeff_of_variation(data):
-    return get_variance(data)/get_mean(data)
+def get_standard_deviation(data):
+    return sqrt(get_variance(data))
 
-def split_sample(data):
+def get_coeff_of_variation(data):
+    return sqrt(get_variance(data))/get_mean(data)
+
+def split_sample(data, n = None):
     def get_n_sets():
         return 1 + int(log(len(data), 2))
 
-    n = get_n_sets()
+    if not n:
+        n = get_n_sets()
+    #print(f"N intervals = {n}")
+
+    min_value = data[0]
+    #print(f"Min value = {min_value}")
+
+    max_value = data[-1]
+    #print(f"Man value = {max_value}")
     
-    print(f"Count of sets {n}")
+    step = (max_value - min_value)/n
 
-    sample_size = len(data) // n
-
-    res = []
-
-    for i in range(n - 1):
-        res.append(data[i*sample_size:(i + 1)*sample_size])
+    res = [list(filter(lambda x: min_value + i*step <= x < min_value + (i + 1)*step, data)) for i in range(n)]
 
     return res
 
